@@ -31,7 +31,8 @@ const { google } = require("googleapis");
 	// 	await scrollable.evaluate((node) => node.scrollBy(0, 500));
 	// 	await page.waitForTimeout(1000); // Wait for 1 second between scrolls
 	// 	scrollCount++;
-	// }let endOfList = false;
+    // }
+    let endOfList = false;
 	while (!endOfList) {
 		await scrollable.evaluate((node) => node.scrollBy(0, 300));
 		endOfList = await page.evaluate(() =>
