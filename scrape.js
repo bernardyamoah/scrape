@@ -1,51 +1,51 @@
 const { chromium } = require("playwright");
+const fs = require("fs");
 const credentials = require("./credentials/credentials.json");
 const { google } = require("googleapis");
-const fs = require("fs");
+
 (async () => {
-	const browser = await chromium.launch();
-	const page = await browser.newPage();
+	nameSheet = "dentist.csv";
+	let googleUrl =
+		"https://www.google.com/maps/search/dentist/@36.3671965,-86.5156829,10z/data=!3m1!4b1?authuser=0&hl=en&entry=ttu";
 	console.time("Execution Time");
+	const browser = await chromium.launch({ headless: true });
+	const page = await browser.newPage();
+	await page.goto(googleUrl, { timeout: 320000 });
+	await page.waitForSelector('[jstcache="3"]');
+	const scrollable = await page.$(
+		"xpath=/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[1]/div[1]"
+	);
 	const auth = new google.auth.JWT(
 		credentials.client_email,
 		null,
 		credentials.private_key,
 		["https://www.googleapis.com/auth/spreadsheets"]
 	);
-	let url =
-		"https://www.google.com/maps/search/pizza/@5.5849164,-0.2751148,13z/data=!3m1!4b1?entry=ttu";
-
-	// Navigate to the webpage
-	await page.goto(url, { timeout: 60000 }); // Set timeout to 60 seconds
-
-	// Wait for the element you want to extract text from to appear
-	await page.waitForSelector('[jstcache="3"]');
-
-	const scrollable = await page.$(
-		"xpath=/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[1]/div[1]"
-	);
 	if (!scrollable) {
 		console.log("Scrollable element not found.");
 		await browser.close();
 		return;
 	}
-	let endOfList = false;
+	// let scrollCount = 0;
+	// while (scrollCount < 20) {
+	// 	await scrollable.evaluate((node) => node.scrollBy(0, 500));
+	// 	await page.waitForTimeout(1000); // Wait for 1 second between scrolls
+	// 	scrollCount++;
+	// }let endOfList = false;
 	while (!endOfList) {
 		await scrollable.evaluate((node) => node.scrollBy(0, 300));
 		endOfList = await page.evaluate(() =>
 			document.body.innerText.includes("You've reached the end of the list")
 		);
 	}
-	const urls = await page.$$eval("a", (links) => {
-		return links
+	const urls = await page.$$eval("a", (links) =>
+		links
 			.map((link) => link.href)
-			.filter((href) => href.startsWith("https://www.google.com/maps/place/"));
-	});
-	console.log(`Found ${urls.length} results.`);
-
+			.filter((href) => href.startsWith("https://www.google.com/maps/place/"))
+	);
 	const scrapePageData = async (url) => {
 		const newPage = await browser.newPage();
-		await newPage.goto(url, { timeout: 60000 });
+		await newPage.goto(url, { timeout: 320000 });
 		await newPage.waitForSelector('[jstcache="3"]');
 		const nameElement = await newPage.$(
 			"xpath=/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div/div[1]/div[1]/h1"
@@ -107,7 +107,6 @@ const fs = require("fs");
 		await newPage.close();
 		return { name, rating, reviews, category, address, website, phone, url };
 	};
-
 	const batchSize = 5;
 	const results = [];
 	for (let i = 0; i < urls.length; i += batchSize) {
@@ -126,8 +125,45 @@ const fs = require("fs");
 		)
 		.join("\n");
 	fs.writeFileSync(nameSheet, csvHeader + csvRows);
-	await saveToGoogleSheets(results);
-	console.timeEnd("Execution Time");
 
+	try {
+		// Authorize the client
+		await auth.authorize();
+
+		// Initialize the Google Sheets API client
+		const sheets = google.sheets({ version: "v4", auth });
+
+		// Specify the spreadsheet ID
+		const spreadsheetId = "1_bU2KFngOvH_R0u63F2n4F57ZZKPcrimSeowkRpEoB0";
+
+		// Write data to the spreadsheet
+		const range = "Sheet1!A1"; // Specify the range where you want to write the data
+		const values = results.map((result) => [
+			result.name,
+			result.rating,
+			result.reviews,
+			result.category,
+			result.address,
+			result.website,
+			result.phone,
+			result.url,
+		]);
+
+		const resource = {
+			values,
+		};
+
+		await sheets.spreadsheets.values.update({
+			spreadsheetId,
+			range,
+			valueInputOption: "RAW",
+			resource,
+		});
+
+		return `Updated cells `;
+	} catch (error) {
+		console.error("Authorization failed:", error);
+	}
 	await browser.close();
+	console.timeEnd("Execution Time");
 })();
