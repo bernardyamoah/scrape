@@ -4,13 +4,14 @@ const credentials = require("./credentials/credentials.json");
 const { google } = require("googleapis");
 
 (async () => {
-	nameSheet = "dentist.csv";
+    nameSheet = "dentist.csv";
+    // Input 
 	let googleUrl =
 		"https://www.google.com/maps/search/dentist/@36.3671965,-86.5156829,10z/data=!3m1!4b1?authuser=0&hl=en&entry=ttu";
 	console.time("Execution Time");
 	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage();
-	await page.goto(googleUrl, { timeout: 320000 });
+	await page.goto(googleUrl, { timeout: 100000 });
 	await page.waitForSelector('[jstcache="3"]');
 	const scrollable = await page.$(
 		"xpath=/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[1]/div[1]"
@@ -46,7 +47,7 @@ const { google } = require("googleapis");
 	);
 	const scrapePageData = async (url) => {
 		const newPage = await browser.newPage();
-		await newPage.goto(url, { timeout: 320000 });
+		await newPage.goto(url, { timeout: 100000 });
 		await newPage.waitForSelector('[jstcache="3"]');
 		const nameElement = await newPage.$(
 			"xpath=/html/body/div[2]/div[3]/div[8]/div[9]/div/div/div[1]/div[2]/div/div[1]/div/div/div[2]/div/div[1]/div[1]/h1"
