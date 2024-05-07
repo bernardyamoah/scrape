@@ -32,7 +32,6 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 			city,
 			time_zone,
 		} = geolocationData;
-		const sheetName = `${ip}_${country_name}`; // Sheet name based on IP address and country
 
 		let googleUrl = `https://www.google.com/maps/search/${term}/@${latitude},${longitude},12z/data=!3m1!4b1?authuser=0&hl=en&entry=ttu`;
 
@@ -56,27 +55,15 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 		}
 		const userInfo = [
 			["IP", "Country", "City", "ISP", "Country Flag", "Time Zone"],
-			[ip, country_name, city, isp, country_flag, time_zone],
+			[ip, country_name, city, isp, country_flag, time_zone.current_time],
 		];
 		const sheets = google.sheets({ version: "v4", auth });
 		// Create a new sheet with the generated sheet name
-		await sheets.spreadsheets.batchUpdate({
-			spreadsheetId,
-			requestBody: {
-				requests: [
-					{
-						addSheet: {
-							properties: {
-								title: sheetName,
-							},
-						},
-					},
-				],
-			},
-		});
+		await auth.authorize();
+
 		await sheets.spreadsheets.values.update({
 			spreadsheetId,
-			range: `${sheetName}!J1:O1`, // Specify the range where you want to write the data
+			range: "Sheet1!A1:F2",
 			valueInputOption: "RAW",
 			resource: {
 				values: userInfo,
@@ -200,10 +187,12 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 		fs.writeFileSync(nameSheet, csvHeader + csvRows);
 
 		try {
+			await auth.authorize();
+
 			// Initialize the Google Sheets API client
 			const sheets = google.sheets({ version: "v4", auth });
 			// Write data to the spreadsheet
-			const range = `${sheetName}!A1:H1`; // Specify the range where you want to write the data
+			const range = "Sheet1!A4"; // Specify the range where you want to write the data
 			const values = [
 				[
 					"Name",
@@ -231,7 +220,7 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 				values,
 			};
 
-			await sheets.spreadsheets.values.append({
+			await sheets.spreadsheets.values.update({
 				spreadsheetId,
 				range,
 				valueInputOption: "RAW",
