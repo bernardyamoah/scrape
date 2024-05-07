@@ -6,7 +6,7 @@ const { chromium } = require("playwright");
 	// Navigate to the webpage
 	await page.goto(
 		"https://www.google.com/maps/place/Divine+Lillies+Mont.+School/@5.5650861,-0.3370241,16z/data=!4m6!3m5!1s0xfdfbd4dd48c8f4d:0x35d44e895ecb58ca!8m2!3d5.559016!4d-0.3308922!16s%2Fg%2F11r27ksm7h?entry=ttu"
-	);
+	,{timeout:100000});
 	await page.waitForSelector('[jstcache="3"]');
 
 	// Name

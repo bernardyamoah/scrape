@@ -234,6 +234,13 @@ https-proxy-agent@^7.0.1:
     agent-base "^7.0.2"
     debug "4"
 
+ip-geolocation-api-javascript-sdk@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/ip-geolocation-api-javascript-sdk/-/ip-geolocation-api-javascript-sdk-1.0.9.tgz#e7a063ed926a00373ff5dda74d7b5fbf778db0f0"
+  integrity sha512-ZpqHD8Tt3uz2+olm9g2n+0MZbwqVsPoU6bq+vFiNrTWFeSlM2w8regzViA52f1FYCUKKIMYJUiwZIJBC0STrNw==
+  dependencies:
+    xmlhttprequest "^1.8.0"
+
 is-stream@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-2.0.1.tgz#fac1e3d53b97ad5a9d0ae9cef2389f5810a5c077"
@@ -372,3 +379,8 @@ whatwg-url@^5.0.0:
   dependencies:
     tr46 "~0.0.3"
     webidl-conversions "^3.0.0"
+
+xmlhttprequest@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/xmlhttprequest/-/xmlhttprequest-1.8.0.tgz#67fe075c5c24fef39f9d65f5f7b7fe75171968fc"
+  integrity sha512-58Im/U0mlVBLM38NdZjHyhuMtCqa61469k2YP/AaPbvCoV9aQGUpbJBj1QRm2ytRiVQBD/fsw7L2bJGDVQswBA==
