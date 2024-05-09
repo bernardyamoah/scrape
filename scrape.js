@@ -5,7 +5,8 @@ const { google } = require("googleapis");
 var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 
 (async () => {
-	term = "Gym";
+	// User search term
+	term = "University";
 	nameSheet = `${term}.csv`;
 	try {
 		console.time("Execution Time");
@@ -35,7 +36,7 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 
 		let googleUrl = `https://www.google.com/maps/search/${term}/@${latitude},${longitude},12z/data=!3m1!4b1?authuser=0&hl=en&entry=ttu`;
 
-		const browser = await chromium.launch({ headless: false });
+		const browser = await chromium.launch({ headless: true });
 		const page = await browser.newPage();
 		await page.goto(googleUrl, { timeout: 49600000 });
 		await page.waitForSelector('[jstcache="3"]');
@@ -77,11 +78,15 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 		// 		document.body.innerText.includes("You've reached the end of the list")
 		// 	);
 		// }
-		const maxScrolls = 20;
+
+		// Scrolling
 		let scrollCount = 0;
-		while (scrollCount < maxScrolls) {
-			await scrollable.evaluate((node) => node.scrollBy(0, 500));
-			await page.waitForTimeout(1000); // Wait for 1 second between scrolls
+		let endOfList = false;
+		while (!endOfList) {
+			await scrollable.evaluate((node) => node.scrollBy(0, 100));
+			endOfList = await page.evaluate(() =>
+				document.body.innerText.includes("You've reached the end of the list")
+			);
 			console.log(`Scrolled ${scrollCount}`);
 			scrollCount++;
 		}
@@ -220,20 +225,22 @@ var IPGeolocationAPI = require("ip-geolocation-api-javascript-sdk");
 				values,
 			};
 
-			await sheets.spreadsheets.values.update({
+			sheets.spreadsheets.values.update({
 				spreadsheetId,
 				range,
 				valueInputOption: "RAW",
 				resource,
 			});
 
-			return `Updated cells `;
+			console.log(`Updated cells `);
+			console.timeEnd("Execution Time");
 		} catch (error) {
 			console.error("Authorization failed:", error);
 		}
+
+		// Close the browser
 		await browser.close();
 	} catch (error) {
 		console.log("Error:", error);
 	}
-	console.timeEnd("Execution Time");
 })();
